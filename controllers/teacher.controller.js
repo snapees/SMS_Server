@@ -5,7 +5,7 @@ require("dotenv").config();
 const formidable = require("formidable");
 const path = require("path");
 const fs = require("fs");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const Teacher = require("../models/teacher.modal");
