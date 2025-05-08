@@ -8,6 +8,7 @@ const {
   getStudentOwnData,
   getStudentWithId,
   deleteStudentWithId,
+  getStudentImage,
 } = require("../controllers/student.controller");
 
 const router = express.Router();
@@ -24,4 +25,5 @@ router.get("/fetch-single", authMiddleware(["STUDENT"]), getStudentOwnData); // 
 router.get("/fetch/:id", authMiddleware(["SCHOOL"]), getStudentWithId);
 router.delete("/delete/:id", authMiddleware(["SCHOOL"]), deleteStudentWithId);
 
+router.get("/image/:id", getStudentImage); // Route to retrieve student image by ID
 module.exports = router;
