@@ -7,8 +7,16 @@ const path = require("path");
 const fs = require("fs");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const cloudinary = require("cloudinary").v2;
 
 const School = require("../models/school.modal");
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 module.exports = {
   registerSchool: async (req, res) => {
@@ -24,15 +32,22 @@ module.exports = {
         } else {
           const photo = files.image[0];
           let filePath = photo.filepath;
-          let originalFilename = photo.originalFilename.replace(" ", "_"); // photo name
-          let newPath = path.join(
-            __dirname,
-            process.env.SCHOOL_IMAGE_PATH,
-            originalFilename
-          );
 
-          let photoData = fs.readFileSync(filePath);
-          fs.writeFileSync(newPath, photoData);
+          // let originalFilename = photo.originalFilename.replace(" ", "_"); // photo name
+          // let newPath = path.join(
+          //   __dirname,
+          //   process.env.SCHOOL_IMAGE_PATH,
+          //   originalFilename
+          // );
+
+          // let photoData = fs.readFileSync(filePath);
+          // fs.writeFileSync(newPath, photoData);
+
+          // Upload image to Cloudinary
+          const result = await cloudinary.uploader.upload(filePath, {
+            folder: "school", // Optional: specify a folder in Cloudinary
+            public_id: photo.originalFilename.replace(" ", "_"),
+          });
 
           const salt = bcrypt.genSaltSync(10);
           const hashPassword = bcrypt.hashSync(fields.password[0], salt);
@@ -41,7 +56,7 @@ module.exports = {
             school_name: fields.school_name[0],
             email: fields.email[0],
             owner_name: fields.owner_name[0],
-            school_image: originalFilename,
+            school_image: result.secure_url,
             password: hashPassword,
           });
 
@@ -172,35 +187,45 @@ module.exports = {
         if (files.image) {
           const photo = files.image[0];
           let filePath = photo.filepath;
-          let originalFilename = photo.originalFilename.replace(" ", "_"); // photo name
 
-          if (school.school_image) {
-            let oldImagePath = path.join(
-              __dirname,
-              process.env.SCHOOL_IMAGE_PATH,
-              school.school_image
-            );
-            if (fs.existsSync(oldImagePath)) {
-              fs.unlink(oldImagePath, (err) => {
-                if (err) {
-                  console.error("Error deleting old image:", err);
-                }
-              }); // delete old image
-            }
-          }
+          // let originalFilename = photo.originalFilename.replace(" ", "_"); // photo name
 
-          let newPath = path.join(
-            __dirname,
-            process.env.SCHOOL_IMAGE_PATH,
-            originalFilename
-          );
-          let photoData = fs.readFileSync(filePath);
-          fs.writeFileSync(newPath, photoData);
+          // if (school.school_image) {
+          //   let oldImagePath = path.join(
+          //     __dirname,
+          //     process.env.SCHOOL_IMAGE_PATH,
+          //     school.school_image
+          //   );
+          //   if (fs.existsSync(oldImagePath)) {
+          //     fs.unlink(oldImagePath, (err) => {
+          //       if (err) {
+          //         console.error("Error deleting old image:", err);
+          //       }
+          //     }); // delete old image
+          //   }
+          // }
 
-          Object.keys(fields).forEach((field) => {
-            school[field] = fields[field][0];
+          // let newPath = path.join(
+          //   __dirname,
+          //   process.env.SCHOOL_IMAGE_PATH,
+          //   originalFilename
+          // );
+          // let photoData = fs.readFileSync(filePath);
+          // fs.writeFileSync(newPath, photoData);
+
+          // Object.keys(fields).forEach((field) => {
+          //   school[field] = fields[field][0];
+          // });
+          // school["school_image"] = originalFilename;
+
+          // Upload new image to Cloudinary
+          const result = await cloudinary.uploader.upload(filePath, {
+            folder: "school", // Optional: specify a folder in Cloudinary
+            public_id: photo.originalFilename.replace(" ", "_"),
           });
-          school["school_image"] = originalFilename;
+
+          // Update school image URL
+          school["school_image"] = result.secure_url;
         } else {
           school["school_name"] = fields.school_name[0];
         }
