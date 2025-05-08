@@ -20,7 +20,12 @@ const PORT = process.env.PORT;
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-const corsOption = { exposedHeaders: "Authorization" };
+const corsOption = {
+  exposedHeaders: "Authorization",
+  origin: ["http://localhost:5173"],
+  methods: ["GET", "POST", "PATCH", "DELETE"],
+  credentials: true,
+};
 app.use(cors(corsOption));
 app.use(cookieParser());
 
