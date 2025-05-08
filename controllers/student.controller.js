@@ -22,20 +22,17 @@ module.exports = {
             message: "Email already exists",
           });
         } else {
-          // const photo = files.image[0];
-          // let filePath = photo.filepath;
-          // let originalFilename = photo.originalFilename.replace(" ", "_"); // photo name
-          // let newPath = path.join(
-          //   __dirname,
-          //   process.env.STUDENT_IMAGE_PATH,
-          //   originalFilename
-          // );
-
-          // let photoData = fs.readFileSync(filePath);
-          // fs.writeFileSync(newPath, photoData);
-
           const photo = files.image[0];
-          const photoData = fs.readFileSync(photo.filepath);
+          let filePath = photo.filepath;
+          let originalFilename = photo.originalFilename.replace(" ", "_"); // photo name
+          let newPath = path.join(
+            __dirname,
+            process.env.STUDENT_IMAGE_PATH,
+            originalFilename
+          );
+
+          let photoData = fs.readFileSync(filePath);
+          fs.writeFileSync(newPath, photoData);
 
           const salt = bcrypt.genSaltSync(10);
           const hashPassword = bcrypt.hashSync(fields.password[0], salt);
@@ -49,7 +46,6 @@ module.exports = {
             gender: fields.gender[0],
             guardian: fields.guardian[0],
             guardian_phone: fields.guardian_phone[0],
-            // student_image: originalFilename,
             student_image: photoData,
             password: hashPassword,
           });
@@ -67,30 +63,6 @@ module.exports = {
       res.status(500).json({
         success: false,
         message: "Student registeration failed", // Internal Server Error
-      });
-    }
-  },
-
-  getStudentImage: async (req, res) => {
-    try {
-      const student = await Student.findById(req.params.id).select(
-        "student_image"
-      );
-      if (!student || !student.student_image) {
-        return res.status(404).json({
-          success: false,
-          message: "Image not found",
-        });
-      }
-
-      // Set the content type and send the image
-      res.set("Content-Type", "image/jpeg"); // Adjust the MIME type if needed
-      res.send(student.student_image);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({
-        success: false,
-        message: "Failed to retrieve image",
       });
     }
   },
