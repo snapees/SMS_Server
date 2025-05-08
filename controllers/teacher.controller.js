@@ -7,8 +7,15 @@ const path = require("path");
 const fs = require("fs");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const cloudinary = require("cloudinary").v2;
 
 const Teacher = require("../models/teacher.modal");
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 module.exports = {
   registerTeacher: async (req, res) => {
@@ -24,15 +31,20 @@ module.exports = {
         } else {
           const photo = files.image[0];
           let filePath = photo.filepath;
-          let originalFilename = photo.originalFilename.replace(" ", "_"); // photo name
-          let newPath = path.join(
-            __dirname,
-            process.env.TEACHER_IMAGE_PATH,
-            originalFilename
-          );
+          // let originalFilename = photo.originalFilename.replace(" ", "_"); // photo name
+          // let newPath = path.join(
+          //   __dirname,
+          //   process.env.TEACHER_IMAGE_PATH,
+          //   originalFilename
+          // );
 
-          let photoData = fs.readFileSync(filePath);
-          fs.writeFileSync(newPath, photoData);
+          // let photoData = fs.readFileSync(filePath);
+          // fs.writeFileSync(newPath, photoData);
+
+          const result = await cloudinary.uploader.upload(filePath, {
+            folder: "teacher", // Optional: specify a folder in Cloudinary
+            public_id: photo.originalFilename.replace(" ", "_"),
+          });
 
           const salt = bcrypt.genSaltSync(10);
           const hashPassword = bcrypt.hashSync(fields.password[0], salt);
@@ -185,35 +197,44 @@ module.exports = {
         if (files.image) {
           const photo = files.image[0];
           let filePath = photo.filepath;
-          let originalFilename = photo.originalFilename.replace(" ", "_"); // photo name
 
-          if (teacher.teacher_image) {
-            let oldImagePath = path.join(
-              __dirname,
-              process.env.TEACHER_IMAGE_PATH,
-              teacher.teacher_image
-            );
-            if (fs.existsSync(oldImagePath)) {
-              fs.unlink(oldImagePath, (err) => {
-                if (err) {
-                  console.error("Error deleting old image:", err);
-                }
-              }); // delete old image
-            }
-          }
+          // let originalFilename = photo.originalFilename.replace(" ", "_"); // photo name
 
-          let newPath = path.join(
-            __dirname,
-            process.env.TEACHER_IMAGE_PATH,
-            originalFilename
-          );
-          let photoData = fs.readFileSync(filePath);
-          fs.writeFileSync(newPath, photoData);
+          // if (teacher.teacher_image) {
+          //   let oldImagePath = path.join(
+          //     __dirname,
+          //     process.env.TEACHER_IMAGE_PATH,
+          //     teacher.teacher_image
+          //   );
+          //   if (fs.existsSync(oldImagePath)) {
+          //     fs.unlink(oldImagePath, (err) => {
+          //       if (err) {
+          //         console.error("Error deleting old image:", err);
+          //       }
+          //     }); // delete old image
+          //   }
+          // }
 
-          Object.keys(fields).forEach((field) => {
-            teacher[field] = fields[field][0];
+          // let newPath = path.join(
+          //   __dirname,
+          //   process.env.TEACHER_IMAGE_PATH,
+          //   originalFilename
+          // );
+          // let photoData = fs.readFileSync(filePath);
+          // fs.writeFileSync(newPath, photoData);
+
+          // Object.keys(fields).forEach((field) => {
+          //   teacher[field] = fields[field][0];
+          // });
+          // teacher["teacher_image"] = originalFilename;
+
+          const result = await cloudinary.uploader.upload(filePath, {
+            folder: "teacher", // Optional: specify a folder in Cloudinary
+            public_id: photo.originalFilename.replace(" ", "_"),
           });
-          teacher["teacher_image"] = originalFilename;
+
+          // Update teacher image URL
+          teacher["teacher_image"] = result.secure_url;
 
           if (fields.password) {
             const salt = bcrypt.genSaltSync(10);
