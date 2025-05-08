@@ -7,8 +7,15 @@ const path = require("path");
 const fs = require("fs");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const cloudinary = require("cloudinary").v2;
 
 const Student = require("../models/student.modal");
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 module.exports = {
   registerStudent: async (req, res) => {
@@ -24,15 +31,22 @@ module.exports = {
         } else {
           const photo = files.image[0];
           let filePath = photo.filepath;
-          let originalFilename = photo.originalFilename.replace(" ", "_"); // photo name
-          let newPath = path.join(
-            __dirname,
-            process.env.STUDENT_IMAGE_PATH,
-            originalFilename
-          );
 
-          let photoData = fs.readFileSync(filePath);
-          fs.writeFileSync(newPath, photoData);
+          // let originalFilename = photo.originalFilename.replace(" ", "_"); // photo name
+          // let newPath = path.join(
+          //   __dirname,
+          //   process.env.STUDENT_IMAGE_PATH,
+          //   originalFilename
+          // );
+
+          // let photoData = fs.readFileSync(filePath);
+          // fs.writeFileSync(newPath, photoData);
+
+          // Upload image to Cloudinary
+          const result = await cloudinary.uploader.upload(filePath, {
+            folder: "students", // Optional: specify a folder in Cloudinary
+            public_id: photo.originalFilename.replace(" ", "_"),
+          });
 
           const salt = bcrypt.genSaltSync(10);
           const hashPassword = bcrypt.hashSync(fields.password[0], salt);
