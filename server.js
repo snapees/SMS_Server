@@ -26,6 +26,29 @@ const corsOption = {
   methods: ["GET", "POST", "PATCH", "DELETE"],
   credentials: true,
 };
+
+// only for testing
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (corsOption.origin.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin); // Set dynamic origin
+  }
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET,HEAD,OPTIONS,POST,PUT,DELETE"
+  );
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  res.header("Access-Control-Allow-Credentials", "true"); // Allow cookies
+  if (req.method === "OPTIONS") {
+    res.status(200).end(); // Handle preflight requests
+    return;
+  }
+  next();
+});
+
 app.use(cors(corsOption));
 app.use(cookieParser());
 
