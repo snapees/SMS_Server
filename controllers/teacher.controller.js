@@ -56,7 +56,7 @@ module.exports = {
             age: fields.age[0],
             gender: fields.gender[0],
             qualification: fields.qualification[0],
-            teacher_image: originalFilename,
+            teacher_image: result.secure_url,
             password: hashPassword,
           });
 
