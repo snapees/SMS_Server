@@ -60,7 +60,8 @@ module.exports = {
             gender: fields.gender[0],
             guardian: fields.guardian[0],
             guardian_phone: fields.guardian_phone[0],
-            student_image: photoData,
+            // student_image: photoData,
+            student_image: result.secure_url,
             password: hashPassword,
           });
 
