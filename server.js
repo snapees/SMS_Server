@@ -20,9 +20,10 @@ const PORT = process.env.PORT;
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+const allowedOrigins = ["http://localhost:5173", "http://localhost:4173"];
 const corsOption = {
   exposedHeaders: "Authorization",
-  origin: ["http://localhost:5173"],
+  origin: allowedOrigins,
   methods: ["GET", "POST", "PATCH", "DELETE"],
   credentials: true,
 };
